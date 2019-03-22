@@ -1,0 +1,109 @@
+在运行XGboost之前，必须设置三种类型成熟：general parameters，booster parameters和task parameters
+General parameters：参数控制在提升（boosting）过程中使用哪种booster，常用的booster有树模型（tree）和线性模型（linear model）。
+Booster parameters：这取决于使用哪种booster。
+Task parameters：控制学习的场景，例如在回归问题中会使用不同的参数控制排序。
+除了以上参数还可能有其它参数，在命令行中使用
+
+General Parameters：
+    booster [default=gbtree]
+    有两中模型可以选择gbtree和gblinear。gbtree使用基于树的模型进行提升计算，gblinear使用线性模型进行提升计算。缺省值为gbtree
+    silent [default=0]
+    取0时表示打印出运行时信息，取1时表示以缄默方式运行，不打印运行时信息。缺省值为0
+    nthread [default to maximum number of threads available if not set]
+    XGBoost运行时的线程数。缺省值是当前系统可以获得的最大线程数
+    num_pbuffer [set automatically by xgboost, no need to be set by user]
+    size of prediction buffer, normally set to number of training instances. The buffers are used to save the prediction results of last boosting step.
+    num_feature [set automatically by xgboost, no need to be set by user]
+    boosting过程中用到的特征维数，设置为特征个数。XGBoost会自动设置，不需要手工设置
+Booster Parameters：
+    eta [default=0.3]
+    为了防止过拟合，更新过程中用到的收缩步长。在每次提升计算之后，算法会直接获得新特征的权重。 eta通过缩减特征的权重使提升计算过程更加保守。缺省值为0.3
+    取值范围为：[0,1]
+    gamma [default=0]
+    minimum loss reduction required to make a further partition on a leaf node of the tree. the larger, the more conservative the algorithm will be.
+    在树的叶子节点上进行进一步分裂所需要的最小loss。值越大，算法越保守
+    range: [0,∞]
+    max_depth [default=6]
+    数的最大深度。缺省值为6
+    取值范围为：[1,∞]
+    min_child_weight [default=1]
+    孩子节点中最小的样本权重和。如果一个叶子节点的样本权重和小于min_child_weight则拆分过程结束。在现行回归模型中，这个参数是指建立每个模型所需要的最小样本数。该成熟越大算法越conservative
+    取值范围为: [0,∞]
+    max_delta_step [default=0]
+    Maximum delta step we allow each tree’s weight estimation to be. If the value is set to 0, it means there is no constraint. If it is set to a positive value, it can help making the update step more conservative. Usually this parameter is not needed, but it might help in logistic regression when class is extremely imbalanced. Set it to value of 1-10 might help control the update
+    取值范围为：[0,∞]
+    subsample [default=1]
+    用于训练模型的子样本占整个样本集合的比例。如果设置为0.5则意味着XGBoost将随机的冲整个样本集合中随机的抽取出50%的子样本建立树模型，这能够防止过拟合。
+    取值范围为：(0,1]
+    colsample_bytree [default=1]
+    在建立树时对特征采样的比例。缺省值为1
+    取值范围：(0,1]
+Parameter for Linear Booster:
+    lambda [default=0]
+    L2 正则的惩罚系数
+    alpha [default=0]
+    L1 正则的惩罚系数
+    lambda_bias
+    在偏置上的L2正则。缺省值为0（在L1上没有偏置项的正则，因为L1时偏置不重要）
+Task Parameters：
+    objective [ default=reg:linear ]
+    定义学习任务及相应的学习目标，可选的目标函数如下：
+        “reg:linear” –线性回归。
+        “reg:logistic” –逻辑回归。
+        “binary:logistic” –二分类的逻辑回归问题，输出为概率。
+        “binary:logitraw” –二分类的逻辑回归问题，输出的结果为wTx。
+        “count:poisson” –计数问题的poisson回归，输出结果为poisson分布。
+        在poisson回归中，max_delta_step的缺省值为0.7。(used to safeguard optimization)
+        “multi:softmax” –让XGBoost采用softmax目标函数处理多分类问题，同时需要设置参数num_class（类别个数）
+        “multi:softprob” –和softmax一样，但是输出的是ndata * nclass的向量，可以将该向量reshape成ndata行nclass列的矩阵。没行数据表示样本所属于每个类别的概率。
+        “rank:pairwise” –set XGBoost to do ranking task by minimizing the pairwise loss
+    base_score [ default=0.5 ]
+        the initial prediction score of all instances, global bias
+    eval_metric [ default according to objective ]
+    校验数据所需要的评价指标，不同的目标函数将会有缺省的评价指标（rmse for regression, and error for classification, mean average precision for ranking）
+    用户可以添加多种评价指标，对于Python用户要以list传递参数对给程序，而不是map参数list参数不会覆盖’eval_metric’
+    The choices are listed below:
+        “rmse”: root mean square error
+        “logloss”: negative log-likelihood
+        “error”: Binary classification error rate. It is calculated as #(wrong cases)/#(all cases). For the predictions, the evaluation will regard the instances with prediction value larger than 0.5 as positive instances, and the others as negative instances.
+        “merror”: Multiclass classification error rate. It is calculated as #(wrong cases)/#(all cases).
+        “mlogloss”: Multiclass logloss
+        “auc”: Area under the curve for ranking evaluation.
+        “ndcg”:Normalized Discounted Cumulative Gain
+        “map”:Mean average precision
+        “ndcg@n”,”map@n”: n can be assigned as an integer to cut off the top positions in the lists for evaluation.
+        “ndcg-“,”map-“,”ndcg@n-“,”map@n-“: In XGBoost, NDCG and MAP will evaluate the score of a list without any positive samples as 1. By adding “-” in the evaluation metric XGBoost will evaluate these score as 0 to be consistent under some conditions.
+        training repeatively
+    seed [ default=0 ]
+        随机数的种子。缺省值为0
+Console Parameters
+The following parameters are only used in the console version of xgboost
+    * use_buffer [ default=1 ]
+    - 是否为输入创建二进制的缓存文件，缓存文件可以加速计算。缺省值为1
+    * num_round
+    - boosting迭代计算次数。
+    * data
+    - 输入数据的路径
+    * test:data
+    - 测试数据的路径
+    * save_period [default=0]
+    - 表示保存第i*save_period次迭代的模型。例如save_period=10表示每隔10迭代计算XGBoost将会保存中间结果，设置为0表示每次计算的模型都要保持。
+    * task [default=train] options: train, pred, eval, dump
+    - train：训练明显
+    - pred：对测试数据进行预测
+    - eval：通过eval[name]=filenam定义评价指标
+    - dump：将学习模型保存成文本格式
+    * model_in [default=NULL]
+    - 指向模型的路径在test, eval, dump都会用到，如果在training中定义XGBoost将会接着输入模型继续训练
+    * model_out [default=NULL]
+    - 训练完成后模型的保持路径，如果没有定义则会输出类似0003.model这样的结果，0003是第三次训练的模型结果。
+    * model_dir [default=models]
+    - 输出模型所保存的路径。
+    * fmap
+    - feature map, used for dump model
+    * name_dump [default=dump.txt]
+    - name of model dump file
+    * name_pred [default=pred.txt]
+    - 预测结果文件
+    * pred_margin [default=0]
+    - 输出预测的边界，而不是转换后的概率

@@ -1,0 +1,3 @@
+loss:
+    'binary_crossentropy':
+    'categorical_crossentropy'
