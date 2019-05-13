@@ -3,6 +3,8 @@
 # @Author  : lilong
 # @File    : z_test.py
 # @Description:
+# from keras.preprocessing.image import load_img, img_to_array
 
-d = {1: 11, 2:22}
-print(d.keys())
+if __name__ == '__main__':
+    pass
+

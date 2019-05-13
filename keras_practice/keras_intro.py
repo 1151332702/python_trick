@@ -9,6 +9,7 @@ from keras.layers import Dense, Activation
 import keras
 import numpy as np
 from keras.utils import np_utils
+from keras import optimizers
 
 X = np.random.random((1000,100))
 _y = np.random.randint(2,size=(1000,1))

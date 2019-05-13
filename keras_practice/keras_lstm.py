@@ -10,7 +10,7 @@ from keras.layers import Embedding
 from keras.layers import LSTM
 
 max_features = 1024
-model = Sequential(Embedding(input_dim=max_features, output_dim=256))
+model = Sequential(Embedding(input_dim=(128, 20), output_dim=256))
 model.add(LSTM(units=128))
 model.add(Dropout(0.5))
 model.add(Dense(1, activation='sigmoid'))
